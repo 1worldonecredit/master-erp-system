@@ -11,6 +11,9 @@
     },
     {
       "path": "./web-dashboard"
+    },
+    {
+      "path": "./erp-frontend"
     }
   ]
 }

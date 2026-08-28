@@ -67,9 +67,11 @@
     "packages/*",
     "api-gateway",
     "api-gateway-e2e",
-    "web-dashboard"
+    "web-dashboard",
+    "erp-frontend"
   ],
   "dependencies": {
+    "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.3.3",
     "axios": "^1.6.0",
     "cors": "^2.8.6",
