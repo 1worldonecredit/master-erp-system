@@ -1,12 +1,23 @@
 import express from 'express';
+import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import { generateGlobalId } from './utils/idGenerator';
 
 const app = express();
 const prisma = new PrismaClient();
 
-// อนุญาตให้อ่านข้อมูลแบบ JSON ที่ส่งมาจาก Frontend
-app.use(express.json()); 
+// เปิดใช้งาน CORS และจำกัดโดเมน
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:4200',
+    'https://9plus.app' // อนุญาตโดเมนจริง
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
+app.use(express.json());
 
 app.get('/api', (req, res) => {
   res.send({ message: 'API Server is running successfully! 🚀' });
@@ -14,13 +25,11 @@ app.get('/api', (req, res) => {
 
 app.post('/api/register', async (req, res) => {
   try {
-    // 1. รับข้อมูลจากหน้าเว็บ (req.body)
     const {
       full_name_local,
       full_name_english,
       date_of_birth,
       citizenship_status,
-      // ข้อมูลสำหรับสร้าง ID
       countryCode,
       birthYear,
       gender,
@@ -28,7 +37,6 @@ app.post('/api/register', async (req, res) => {
       regionCode
     } = req.body;
 
-    // 2. สร้าง Global ID 16 หลัก
     const global_id = generateGlobalId({
       countryCode,
       birthYear,
@@ -37,13 +45,12 @@ app.post('/api/register', async (req, res) => {
       regionCode
     });
 
-    // 3. บันทึกลงฐานข้อมูลผ่าน Prisma
     const newIdentity = await prisma.core_identities.create({
       data: {
         global_id,
         full_name_local,
         full_name_english,
-        date_of_birth: new Date(date_of_birth), // แปลงสตริงวันที่ให้เป็นออบเจกต์ Date
+        date_of_birth: new Date(date_of_birth),
         citizenship_status
       }
     });
