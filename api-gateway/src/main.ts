@@ -3,7 +3,12 @@ import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { generateGlobalId } from './utils/idGenerator';
-import { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } from '@simplewebauthn/server';
+import { 
+  generateRegistrationOptions, 
+  verifyRegistrationResponse, 
+  generateAuthenticationOptions, 
+  verifyAuthenticationResponse 
+} from '@simplewebauthn/server';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -38,6 +43,7 @@ app.get('/api', (req, res) => {
   return res.send({ message: 'API Server is running successfully! 🚀' });
 });
 
+// 1. API: สมัครสมาชิกและสร้าง Global ID
 app.post('/api/register', async (req, res) => {
   try {
     const validatedData = registerSchema.parse(req.body);
@@ -67,12 +73,77 @@ app.post('/api/register', async (req, res) => {
     return res.status(500).json({ error: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' });
   }
 });
-// --- 4. API ใหม่: ขอตัวเลือกการเข้าสู่ระบบด้วยลายนิ้วมือ (Login Options) ---
+
+// 2. API: ขอตัวเลือกการสแกนนิ้วเพื่อลงทะเบียน
+app.post('/api/biometric/register/options', async (req, res) => {
+  const { global_id } = req.body;
+  if (!global_id) return res.status(400).json({ error: 'กรุณาระบุ global_id' });
+
+  const user = await prisma.core_identities.findUnique({ where: { global_id } });
+  if (!user) return res.status(404).json({ error: 'ไม่พบผู้ใช้งานนี้ในระบบ' });
+
+  const existingPasskeys = await prisma.passkey_credentials.findMany({ where: { global_id } });
+
+  const options = await generateRegistrationOptions({
+    rpName,
+    rpID,
+    userID: new Uint8Array(Buffer.from(global_id)), 
+    userName: user.full_name_english,
+    attestationType: 'none',
+    excludeCredentials: existingPasskeys.map((key: any) => ({
+      id: key.credential_id as any,
+      type: 'public-key' as const, 
+    })),
+  });
+
+  challengeStore[global_id] = options.challenge;
+  return res.status(200).json(options);
+});
+
+// 3. API: ตรวจสอบและบันทึกลายนิ้วมือใหม่
+app.post('/api/biometric/register/verify', async (req, res) => {
+  const { global_id, registrationResponse } = req.body;
+  const expectedChallenge = challengeStore[global_id];
+
+  if (!expectedChallenge) return res.status(400).json({ error: 'ไม่พบ Challenge กรุณาทำรายการใหม่' });
+
+  try {
+    const verification = await verifyRegistrationResponse({
+      response: registrationResponse as any, 
+      expectedChallenge,
+      expectedOrigin: origin,
+      expectedRPID: rpID,
+    });
+
+    if (verification.verified && verification.registrationInfo) {
+      const { credential } = verification.registrationInfo;
+
+      await prisma.passkey_credentials.create({
+        data: {
+          global_id,
+          credential_id: credential.id,
+          public_key: Buffer.from(credential.publicKey as any), 
+          counter: BigInt(credential.counter)
+        }
+      });
+
+      delete challengeStore[global_id];
+      return res.status(200).json({ message: 'ลงทะเบียนลายนิ้วมือสำเร็จ' });
+    }
+    
+    return res.status(400).json({ error: 'การตรวจสอบลายนิ้วมือไม่ถูกต้อง' });
+    
+  } catch (error: any) {
+    console.error(error);
+    return res.status(400).json({ error: 'การตรวจสอบลายนิ้วมือล้มเหลว', details: error.message });
+  }
+});
+
+// 4. API: ขอตัวเลือกการเข้าสู่ระบบด้วยลายนิ้วมือ (Login Options)
 app.post('/api/biometric/login/options', async (req, res) => {
   const { global_id } = req.body;
   if (!global_id) return res.status(400).json({ error: 'กรุณาระบุ global_id' });
 
-  // ค้นหากุญแจลายนิ้วมือทั้งหมดของผู้ใช้นี้ในระบบ
   const passkeys = await prisma.passkey_credentials.findMany({ where: { global_id } });
   if (passkeys.length === 0) return res.status(404).json({ error: 'ไม่พบข้อมูลลายนิ้วมือ กรุณาลงทะเบียนก่อน' });
 
@@ -89,7 +160,7 @@ app.post('/api/biometric/login/options', async (req, res) => {
   return res.status(200).json(options);
 });
 
-// --- 5. API ใหม่: ตรวจสอบและเข้าสู่ระบบ (Login Verify) ---
+// 5. API: ตรวจสอบและเข้าสู่ระบบ (Login Verify)
 app.post('/api/biometric/login/verify', async (req, res) => {
   const { global_id, authenticationResponse } = req.body;
   const expectedChallenge = challengeStore[global_id];
@@ -97,19 +168,17 @@ app.post('/api/biometric/login/verify', async (req, res) => {
   if (!expectedChallenge) return res.status(400).json({ error: 'ไม่พบ Challenge กรุณาทำรายการใหม่' });
 
   try {
-    // หากุญแจลายนิ้วมือที่ตรงกับอุปกรณ์ที่ส่งมา
     const passkey = await prisma.passkey_credentials.findUnique({
       where: { credential_id: authenticationResponse.id }
     });
 
     if (!passkey) return res.status(404).json({ error: 'ไม่พบกุญแจลายนิ้วมือนี้ในระบบ' });
 
-   const verification = await verifyAuthenticationResponse({
+    const verification = await verifyAuthenticationResponse({
       response: authenticationResponse as any,
       expectedChallenge,
       expectedOrigin: origin,
       expectedRPID: rpID,
-      // เปลี่ยนชื่อตัวแปรเป็น credential และปรับฟิลด์ด้านในให้ตรงกับเวอร์ชันล่าสุด
       credential: {
         id: passkey.credential_id,
         publicKey: passkey.public_key as any,
@@ -120,15 +189,12 @@ app.post('/api/biometric/login/verify', async (req, res) => {
     if (verification.verified && verification.authenticationInfo) {
       const { newCounter } = verification.authenticationInfo;
 
-      // อัปเดตจำนวนครั้ง (Counter) เพื่อป้องกันการแฮกแบบ Replay Attack
       await prisma.passkey_credentials.update({
         where: { credential_id: passkey.credential_id },
         data: { counter: BigInt(newCounter) }
       });
 
       delete challengeStore[global_id];
-      
-      // TODO: ในอนาคตสามารถสร้าง JWT Token ตรงนี้เพื่อส่งกลับไปให้หน้าเว็บ
       return res.status(200).json({ message: 'เข้าสู่ระบบสำเร็จ! 🚀', global_id });
     }
 
