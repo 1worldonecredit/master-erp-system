@@ -501,7 +501,6 @@ model yeeki_settings {
   auto_draw_percent Int?
 }
 
-
 model core_identities {
   global_id            String                 @id @db.VarChar(20)
   full_name_local      String                 @db.VarChar(255)
@@ -513,7 +512,7 @@ model core_identities {
   // การเชื่อมโยงข้อมูล (Relations)
   biometric_data       biometric_data?
   demographic_metadata demographic_metadata?
-  passkeys             passkey_credentials[]  // 👈 1. เพิ่มบรรทัดนี้
+  passkeys             passkey_credentials[]
 }
 
 model biometric_data {
@@ -540,7 +539,7 @@ model demographic_metadata {
   identity             core_identities  @relation(fields: [global_id], references: [global_id], onDelete: Cascade)
 }
 
-// 👈 2. เพิ่มตารางใหม่สำหรับ WebAuthn (Biometric Login)
+// ตารางใหม่สำหรับ WebAuthn (Biometric Login)
 model passkey_credentials {
   id             String   @id @default(uuid())
   global_id      String   @db.VarChar(20)
