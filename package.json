@@ -70,6 +70,7 @@
     "web-dashboard"
   ],
   "dependencies": {
+    "@simplewebauthn/server": "^13.3.3",
     "axios": "^1.6.0",
     "cors": "^2.8.6",
     "express": "^5.1.0",
