@@ -8,6 +8,10 @@ const prisma = new PrismaClient();
 // อนุญาตให้อ่านข้อมูลแบบ JSON ที่ส่งมาจาก Frontend
 app.use(express.json()); 
 
+app.get('/api', (req, res) => {
+  res.send({ message: 'API Server is running successfully! 🚀' });
+});
+
 app.post('/api/register', async (req, res) => {
   try {
     // 1. รับข้อมูลจากหน้าเว็บ (req.body)

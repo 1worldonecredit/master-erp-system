@@ -67,10 +67,6 @@
   },
  "dependencies": {
     "express": "^5.1.0"
-  },
-  "devDependencies": {
-    "@nx/webpack": "latest",
-    "webpack": "^5.90.0",
-    "webpack-cli": "^5.1.4"
   }
+
 }
