@@ -1,0 +1,539 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model bank_statements {
+  statement_id               Int       @id @default(autoincrement())
+  bank_id                    Int
+  bank_name                  String?   @db.VarChar(100)
+  account_number             String?   @db.VarChar(50)
+  amount                     Decimal?  @db.Decimal(18, 2)
+  transfer_date              DateTime  @db.Date
+  transfer_time              DateTime  @db.Time(6)
+  recorded_by                String?   @db.VarChar(100)
+  is_reconciled              String?   @db.Bit(1)
+  reconciled_with_deposit_id Int?
+  created_at                 DateTime? @db.Timestamp(6)
+}
+
+model banks {
+  bank_id        Int       @id @default(autoincrement())
+  bank_name      String?   @db.VarChar(100)
+  bank_code      String?   @db.VarChar(20)
+  logo_url       String?   @db.VarChar
+  is_active      String?   @db.Bit(1)
+  created_at     DateTime? @db.Timestamp(6)
+  account_number String?   @db.VarChar(50)
+  account_name   String?   @db.VarChar(100)
+  currency       String?   @db.VarChar(10)
+  country        String?   @db.VarChar(50)
+}
+
+model blocked_ips {
+  id         Int       @id @default(autoincrement())
+  ip_address String?   @db.VarChar(50)
+  reason     String?   @db.VarChar(255)
+  is_blocked String?   @db.Bit(1)
+  created_at DateTime? @db.Timestamp(6)
+  updated_at DateTime? @db.Timestamp(6)
+}
+
+model commission_settings {
+  id                  Int       @id @default(autoincrement())
+  purchase_percent    Decimal?  @db.Decimal(5, 2)
+  win_percent         Decimal?  @db.Decimal(5, 2)
+  daily_bonus_percent Decimal?  @db.Decimal(5, 2)
+  updated_at          DateTime? @db.Timestamp(6)
+}
+
+model customerlevels {
+  level_id   Int      @id @default(autoincrement())
+  level_name String?  @db.VarChar(50)
+  min_spent  Decimal? @db.Decimal(18, 2)
+  max_spent  Decimal? @db.Decimal(18, 2)
+}
+model draw_results {
+  draw_date  DateTime  @id @db.Date
+  prize_8    String?   @db.VarChar(8)
+  prize_6    String?   @db.VarChar(6)
+  prize_4    String?   @db.VarChar(4)
+  prize_3    String?   @db.VarChar(3)
+  prize_2    String?   @db.VarChar(2)
+  created_at DateTime? @db.Timestamp(6)
+}
+
+model emp_branches {
+  branch_code  String  @id @db.VarChar(10)
+  branch_name  String? @db.VarChar(100)
+  country_code String? @db.VarChar(2)
+}
+
+model emp_countries {
+  country_code String  @id @db.VarChar(2)
+  country_name String? @db.VarChar(100)
+}
+
+model emp_departments {
+  dept_code String  @id @db.VarChar(10)
+  dept_name String? @db.VarChar(100)
+}
+
+model emp_positions {
+  position_code        String   @id @db.VarChar(10)
+  position_name        String?  @db.VarChar(100)
+  dept_code            String?  @db.VarChar(10)
+  base_salary          Decimal? @db.Decimal(18, 2)
+  hourly_rate          Decimal? @db.Decimal(18, 2)
+  ot_multiplier        Decimal? @db.Decimal(4, 2)
+  job_responsibilities String?  @db.VarChar
+}
+
+model employees {
+  emp_code          String    @id @db.VarChar(20)
+  username          String?   @db.VarChar(50)
+  password_hash     String?   @db.VarChar(255)
+  firstname         String?   @db.VarChar(100)
+  lastname          String?   @db.VarChar(100)
+  branch_code       String?   @db.VarChar(10)
+  position_code     String?   @db.VarChar(10)
+  employment_type   String?   @db.VarChar(20)
+  role_id           Int?
+  status            String?   @db.VarChar(20)
+  created_at        DateTime? @db.Timestamp(6)
+  expected_salary   Decimal?  @db.Decimal(18, 2)
+  special_skills    String?   @db.VarChar
+  why_hire_you      String?   @db.VarChar
+  education_doc_url String?   @db.VarChar
+  profile_pic_url   String?   @db.VarChar
+}
+
+model exchangerates {
+  currency_pair String    @id @db.VarChar(10)
+  rate          Decimal?  @db.Decimal(18, 6)
+  last_updated  DateTime? @db.Timestamp(6)
+}
+model job_ads_settings {
+  id                Int       @id @default(autoincrement())
+  is_active         String?   @db.Bit(1)
+  ad_title          String?   @db.VarChar(255)
+  ad_description    String?   @db.VarChar
+  end_time          DateTime? @db.Timestamp(6)
+  start_time        DateTime? @db.Timestamp(6)
+  allowed_positions String?   @db.VarChar
+}
+
+model login_failed_attempts {
+  id           Int       @id @default(autoincrement())
+  ip_address   String?   @db.VarChar(50)
+  attempt_time DateTime? @db.Timestamp(6)
+}
+
+model lottery_order_items {
+  item_id         Int      @id @default(autoincrement())
+  order_id        Int
+  lottery_type    String?  @db.VarChar(50)
+  selected_number String?  @db.VarChar(20)
+  price           Decimal? @db.Decimal(18, 2)
+  status          String?  @db.VarChar(50)
+  prize_amount    Decimal? @db.Decimal(18, 2)
+}
+
+model lottery_orders {
+  order_id      Int       @id @default(autoincrement())
+  user_id       Int
+  total_amount  Decimal?  @db.Decimal(18, 2)
+  currency_code String?   @db.VarChar(10)
+  status        String?   @db.VarChar(50)
+  created_at    DateTime? @db.Timestamp(6)
+  draw_date     DateTime? @db.Date
+  order_note    String?   @db.VarChar
+}
+
+model lottery_prize_rates {
+  id           Int      @id @default(autoincrement())
+  lottery_type String?  @db.VarChar(10)
+  multiplier   Decimal? @db.Decimal(10, 2)
+  description  String?  @db.VarChar(255)
+}
+
+model master_animal_numbers {
+  animal_id      Int       @id @default(autoincrement())
+  animal_name_th String?   @db.VarChar(100)
+  image_url      String    @db.VarChar
+  lottery_type   String?   @db.VarChar(10)
+  num1           String?   @db.VarChar(10)
+  num2           String?   @db.VarChar(10)
+  num3           String?   @db.VarChar(10)
+  is_active      String?   @db.Bit(1)
+  created_at     DateTime? @db.Timestamp(6)
+  created_by     String?   @db.VarChar(100)
+  updated_by     String?   @db.VarChar(100)
+}
+
+model notifications {
+  notification_id Int       @id @default(autoincrement())
+  user_id         Int
+  title           String?   @db.VarChar(255)
+  message         String    @db.VarChar
+  type            String?   @db.VarChar(50)
+  is_read         String?   @db.Bit(1)
+  is_deleted      String?   @db.Bit(1)
+  created_at      DateTime? @db.Timestamp(6)
+}
+
+model p2p_ads {
+  ad_id       Int       @id @default(autoincrement())
+  media_type  String?   @db.VarChar(20)
+  media_url   String?   @db.VarChar(100)
+  is_active   String?   @db.Bit(1)
+  created_at  DateTime? @db.Timestamp(6)
+  title       String?   @db.VarChar(255)
+  description String?   @db.VarChar
+  start_time  DateTime? @db.Timestamp(6)
+  end_time    DateTime? @db.Timestamp(6)
+  sort_order  Int?
+}
+
+model p2p_offenders {
+  user_id           Int       @id @default(autoincrement())
+  fail_count        Int?
+  last_offense_date DateTime? @db.Timestamp(6)
+  notes             String?   @db.VarChar(255)
+}
+
+model p2p_promotions {
+  promo_id      Int       @id @default(autoincrement())
+  title         String?   @db.VarChar(255)
+  bonus_percent Decimal?  @db.Decimal(5, 2)
+  start_time    DateTime  @db.Timestamp(6)
+  end_time      DateTime  @db.Timestamp(6)
+  created_at    DateTime? @db.Timestamp(6)
+}
+
+model p2p_requests {
+  request_id       Int       @id @default(autoincrement())
+  requester_id     Int
+  provider_id      Int?
+  request_type     String?   @db.VarChar(20)
+  currency         String?   @db.VarChar(10)
+  amount           Decimal?  @db.Decimal(18, 2)
+  bonus_or_fee     Decimal?  @db.Decimal(18, 2)
+  net_amount       Decimal?  @db.Decimal(18, 2)
+  provider_reward  Decimal?  @db.Decimal(18, 2)
+  status           String?   @db.VarChar(50)
+  slip_url         String?   @db.VarChar
+  created_at       DateTime? @db.Timestamp(6)
+  expires_at       DateTime? @db.Timestamp(6)
+  accepted_at      DateTime? @db.Timestamp(6)
+  completed_at     DateTime? @db.Timestamp(6)
+  user_bank_id     Int?
+  transfer_amount  Decimal?  @db.Decimal(18, 2)
+  transfer_date    DateTime? @db.Date
+  transfer_time    DateTime? @db.Time(6)
+  slip_error_count Int?
+}
+
+model p2p_settings {
+  id                       Int       @id @default(autoincrement())
+  deposit_bonus_percent    Decimal?  @db.Decimal(5, 2)
+  withdraw_fee_percent     Decimal?  @db.Decimal(5, 2)
+  provider_reward_percent  Decimal?  @db.Decimal(5, 2)
+  referrer_reward_percent  Decimal?  @db.Decimal(5, 2)
+  request_timeout_minutes  Int?
+  promo_start_time         DateTime? @db.Timestamp(6)
+  promo_end_time           DateTime? @db.Timestamp(6)
+  updated_at               DateTime? @db.Timestamp(6)
+  mission_timeout_minutes  Int?
+  provider_timeout_minutes Int?
+}
+
+model permissions {
+  permission_id   Int     @id @default(autoincrement())
+  permission_name String? @db.VarChar(100)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model role_menus {
+  role_id Int
+  menu_id Int
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model rolepermissions {
+  role_id       Int
+  permission_id Int
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model roles {
+  role_id   Int
+  role_name String? @db.VarChar(50)
+
+  @@ignore
+}
+
+model super_yeeki_jackpot {
+  jackpot_id     Int       @id @default(autoincrement())
+  current_amount Decimal?  @db.Decimal(18, 2)
+  currency_code  String?   @db.VarChar(10)
+  last_updated   DateTime? @db.Timestamp(6)
+}
+
+model system_menus {
+  menu_id           Int     @id @default(autoincrement())
+  title             String? @db.VarChar(100)
+  path              String? @db.VarChar(200)
+  icon              String? @db.VarChar(50)
+  component         String? @db.VarChar(100)
+  parent_id         Int?
+  sort_order        Int?
+  is_active         String? @db.Bit(1)
+  show_notification String? @db.Bit(1)
+}
+
+model system_roles {
+  role_id   Int     @id @default(autoincrement())
+  role_name String? @db.VarChar(50)
+}
+
+model system_settings {
+  id                Int       @id @default(autoincrement())
+  close_time        DateTime? @db.Time(6)
+  is_sales_open     String?   @db.Bit(1)
+  last_updated      DateTime? @db.Timestamp(6)
+  open_time         DateTime? @db.Time(6)
+  draw_time         DateTime? @db.Time(6)
+  is_auto_draw      String?   @db.Bit(1)
+  auto_draw_percent Int?
+}
+
+model transactions {
+  transaction_id   Int       @id @default(autoincrement())
+  user_id          Int
+  transaction_type String?   @db.VarChar(50)
+  title            String?   @db.VarChar(255)
+  amount           Decimal?  @db.Decimal(18, 2)
+  status           String?   @db.VarChar(50)
+  created_at       DateTime? @db.Timestamp(6)
+  system_bank_id   Int?
+  slip_image       String?   @db.VarChar
+}
+
+model transactions_deposit {
+  deposit_id       Int       @id @default(autoincrement())
+  user_id          Int
+  customer_name    String?   @db.VarChar(100)
+  bank_name        String?   @db.VarChar(100)
+  account_number   String?   @db.VarChar(50)
+  amount           Decimal?  @db.Decimal(18, 2)
+  currency_code    String?   @db.VarChar(10)
+  slip_image       String    @db.VarChar
+  status           String?   @db.VarChar(20)
+  deposit_datetime DateTime  @db.Timestamp(6)
+  created_at       DateTime? @db.Timestamp(6)
+  reviewed_by      String?   @db.VarChar(100)
+  reject_reason    String?   @db.VarChar(255)
+  reject_reasons   String?   @db.VarChar
+  edit_count       Int?
+}
+
+model user_referrals {
+  referral_id         Int       @id @default(autoincrement())
+  referrer_id         Int
+  referred_user_id    Int
+  created_at          DateTime? @db.Timestamp(6)
+  total_purchase_comm Decimal?  @db.Decimal(18, 2)
+  total_win_comm      Decimal?  @db.Decimal(18, 2)
+}
+
+model userbanks {
+  user_bank_id   Int       @id @default(autoincrement())
+  user_id        Int
+  bank_id        Int
+  account_name   String?   @db.VarChar(100)
+  account_number String?   @db.VarChar(50)
+  is_primary     String?   @db.Bit(1)
+  created_at     DateTime? @db.Timestamp(6)
+  currency_code  String?   @db.VarChar(10)
+  status         String?   @db.VarChar(20)
+  passbook_image String?
+  reject_reason  String?   @db.VarChar
+}
+
+model username_lastname {
+  id        Int     @id @default(autoincrement())
+  user_id   Int
+  firstname String? @db.VarChar(100)
+  lastname  String? @db.VarChar(100)
+}
+
+model users {
+  user_id             Int       @id @default(autoincrement())
+  username            String?   @db.VarChar(50)
+  password_hash       String?   @db.VarChar(255)
+  referrer_username   String?   @db.VarChar(50)
+  is_active           String?   @db.Bit(1)
+  created_at          DateTime? @db.Timestamp(6)
+  role_id             Int?
+  level_id            Int?
+  wallet_balance      Decimal?  @db.Decimal(18, 2)
+  total_orders        Int?
+  country             String?   @db.VarChar(50)
+  currency_code       String?   @db.VarChar(10)
+  is_suspicious       String?   @db.Bit(1)
+  suspicious_reason   String?   @db.VarChar(255)
+  total_purchase_comm Decimal?  @db.Decimal(18, 2)
+  total_win_comm      Decimal?  @db.Decimal(18, 2)
+  total_daily_bonus   Decimal?  @db.Decimal(18, 2)
+  p2p_cancel_count    Int?
+  is_locked           String?   @db.Bit(1)
+}
+
+model video_comments {
+  id               Int               @id @default(autoincrement())
+  video_id         Int?
+  username         String            @db.VarChar(100)
+  comment_text     String
+  created_at       DateTime?         @default(now()) @db.Timestamp(6)
+  video_promotions video_promotions? @relation(fields: [video_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model video_likes {
+  id               Int               @id @default(autoincrement())
+  video_id         Int?
+  username         String            @db.VarChar(100)
+  created_at       DateTime?         @default(now()) @db.Timestamp(6)
+  video_promotions video_promotions? @relation(fields: [video_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([video_id, username])
+}
+
+model video_promotions {
+  id             Int              @id @default(autoincrement())
+  title          String           @db.VarChar(255)
+  description    String?
+  cf_video_id    String           @db.VarChar(100)
+  created_at     DateTime?        @default(now()) @db.Timestamp(6)
+  likes_count    Int?             @default(0)
+  views_count    Int?             @default(0)
+  shares_count   Int?             @default(0)
+  comments_count Int?             @default(0)
+  thumbnail_url  String?
+  video_comments video_comments[]
+  video_likes    video_likes[]
+  video_shares   video_shares[]
+}
+
+model video_shares {
+  id               Int               @id @default(autoincrement())
+  video_id         Int?
+  username         String?           @db.VarChar(100)
+  created_at       DateTime?         @default(now()) @db.Timestamp(6)
+  video_promotions video_promotions? @relation(fields: [video_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model wallets {
+  wallet_id    Int       @id @default(autoincrement())
+  user_id      Int
+  balance      Decimal?  @db.Decimal(18, 2)
+  points       Int?
+  last_updated DateTime? @db.Timestamp(6)
+}
+
+model yeeki_order_items {
+  item_id         Int      @id @default(autoincrement())
+  order_id        Int
+  lottery_type    String?  @db.VarChar(50)
+  selected_number String?  @db.VarChar(10)
+  price           Decimal? @db.Decimal(18, 2)
+  status          String?  @db.VarChar(50)
+  prize_amount    Decimal? @db.Decimal(18, 2)
+}
+
+model yeeki_orders {
+  order_id      Int       @id @default(autoincrement())
+  user_id       Int
+  round_id      Int
+  total_amount  Decimal?  @db.Decimal(18, 2)
+  currency_code String?   @db.VarChar(10)
+  status        String?   @db.VarChar(50)
+  order_note    String?   @db.VarChar
+  created_at    DateTime? @db.Timestamp(6)
+  category      String?   @db.VarChar(20)
+}
+
+model yeeki_prize_rates {
+  id           Int       @id @default(autoincrement())
+  lottery_type String?   @db.VarChar(50)
+  multiplier   Decimal?  @db.Decimal(18, 2)
+  updated_at   DateTime? @db.Timestamp(6)
+}
+
+model yeeki_rounds {
+  round_id        Int       @id @default(autoincrement())
+  draw_date       DateTime  @db.Date
+  round_number    Int
+  open_time       DateTime  @db.Timestamp(6)
+  close_time      DateTime  @db.Timestamp(6)
+  result_3_top    String?   @db.VarChar(3)
+  result_2_bottom String?   @db.VarChar(2)
+  status          String?   @db.VarChar(20)
+  draw_time       DateTime? @db.Timestamp(6)
+  result_8_super  String?   @db.VarChar(8)
+  result_4_top    String?   @db.VarChar(4)
+  result_6_top    String?   @db.VarChar(6)
+  category        String?   @db.VarChar(20)
+  round_name      String?   @db.VarChar(255)
+}
+
+model yeeki_settings {
+  id                Int     @id @default(autoincrement())
+  is_auto_draw      String? @db.Bit(1)
+  auto_draw_percent Int?
+}
+
+model core_identities {
+  global_id            String                 @id @db.VarChar(20) // เช่น THA-90-M1-BKK-12345
+  full_name_local      String                 @db.VarChar(255)
+  full_name_english    String                 @db.VarChar(255)
+  date_of_birth        DateTime               @db.Date
+  citizenship_status   String                 @db.VarChar(100)
+  created_at           DateTime?              @default(now()) @db.Timestamp(6)
+  
+  // การเชื่อมโยงข้อมูล (Relations)
+  biometric_data       biometric_data?
+  demographic_metadata demographic_metadata?
+}
+
+model biometric_data {
+  id                   Int              @id @default(autoincrement())
+  global_id            String           @unique @db.VarChar(20)
+  face_vector_hash     String?          @db.Text // เก็บข้อมูลโครงสร้างใบหน้าที่ผ่านการเข้ารหัส (Hash)
+  fingerprint_hash     String?          @db.Text // เก็บข้อมูลลายนิ้วมือที่ผ่านการเข้ารหัส (Hash)
+  last_login_device    String?          @db.VarChar(255)
+  last_login_ip        String?          @db.VarChar(45)
+  updated_at           DateTime?        @updatedAt @db.Timestamp(6)
+
+  identity             core_identities  @relation(fields: [global_id], references: [global_id], onDelete: Cascade)
+}
+
+model demographic_metadata {
+  id                   Int              @id @default(autoincrement())
+  global_id            String           @unique @db.VarChar(20)
+  blood_type           String?          @db.VarChar(5)
+  medical_alert        String?          @db.Text
+  criminal_flag        Boolean?         @default(false)
+  religion             String?          @db.VarChar(50)
+  gender               String?          @db.VarChar(20)
+
+  identity             core_identities  @relation(fields: [global_id], references: [global_id], onDelete: Cascade)
+}

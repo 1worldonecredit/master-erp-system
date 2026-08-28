@@ -7,6 +7,8 @@ out-tsc
 
 # dependencies
 node_modules
+package-lock.json
+.env
 
 # IDEs and editors
 /.idea
@@ -43,3 +45,8 @@ Thumbs.db
 .nx/migrate-runs
 .claude/worktrees
 .claude/settings.local.json
+
+test-output
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*
