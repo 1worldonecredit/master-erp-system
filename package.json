@@ -27,6 +27,7 @@
     "@swc/helpers": "~0.5.18",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.3.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.0",
     "@types/jest": "~30.0.0",
     "@types/node": "^22.0.0",
@@ -70,6 +71,7 @@
   ],
   "dependencies": {
     "axios": "^1.6.0",
+    "cors": "^2.8.6",
     "express": "^5.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
